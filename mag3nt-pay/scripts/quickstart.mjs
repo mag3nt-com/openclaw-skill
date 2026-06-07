@@ -7,7 +7,7 @@
  * which payment protocols are available.
  *
  * Usage:
- *   export MAG3NT_API_KEY=sx_live_...
+ *   export MAG3NT_API_KEY=mag3nt_live_...
  *   export MAG3NT_CARD_ID=mag3nt_...
  *   export MAG3NT_CARD_TOKEN=tok_...
  *   node quickstart.mjs
@@ -59,6 +59,8 @@ async function main() {
   console.log("  Card ID:      ", card.id);
   console.log("  Status:       ", card.status);
   console.log("  Limit:        ", card.limit_amount, "USDC");
+  console.log("  Remaining:    ", card.remaining, "USDC");
+  console.log("  Spent:        ", card.balance, "USDC");
   console.log("  Network:      ", card.funding_network || "not set");
   console.log("  Protocols:    ", protocols.join(", "));
   console.log("  Streaming:    ", card.streaming_enabled ? "enabled" : "disabled");

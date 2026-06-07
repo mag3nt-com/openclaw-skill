@@ -11,7 +11,9 @@ Set the following in your `.env` or export them:
 MAG3NT_API_KEY=mag3nt_live_your_api_key_here
 
 # Your Mag3nt card credentials (the agent's spending card)
-MAG3NT_CARD_ID=sx_your-card-uuid
+# Card IDs use the mag3nt_ prefix (e.g. mag3nt_c40e2847-...)
+# Legacy sx_ card IDs are also supported for backward compatibility
+MAG3NT_CARD_ID=mag3nt_your-card-uuid
 MAG3NT_CARD_TOKEN=tok_your-card-token
 ```
 
@@ -28,7 +30,7 @@ fetch('https://mag3nt.com/api/cards', {
 .then(data => {
   const card = data.cards.find(c => c.id === process.env.MAG3NT_CARD_ID);
   if (!card) { console.error('Card not found'); process.exit(1); }
-  console.log('Status:', card.status, '| Balance:', card.balance, 'USDC');
+  console.log('Status:', card.status, '| Remaining:', card.remaining, 'USDC | Spent:', card.balance, 'USDC');
   console.log('Network:', card.funding_network, '| Protocols:', card.accepted_protocols);
 })
 .catch(e => console.error('Error:', e.message));
