@@ -1,7 +1,7 @@
 ---
 name: mag3nt-pay
-version: 1.0.0
-description: "Pay for any API that returns HTTP 402 Payment Required using Mag3nt virtual cards. Use when the agent encounters an HTTP 402 response, a paywall, a payment challenge header (PAYMENT-REQUIRED, WWW-Authenticate Payment, AP2-Challenge), a paylink object in a 402 body, or needs to check card balance or configure Mag3nt credentials to access a paid API endpoint."
+version: 1.0.3
+description: "Pay for APIs and services, receive payments, and manage agent wallets using Mag3nt USDC virtual cards. Activate when the agent needs to pay for a resource, encounters an HTTP 402 response, a payment challenge header (x402, MPP, AP2, Pay Link), needs to check wallet balance, or set up payment credentials for autonomous transactions."
 user-invocable: true
 disable-model-invocation: false
 allowed-tools: ["Bash(node *)", "Bash(npm *)", "Bash(npx *)", "Bash(curl *)"]
@@ -9,7 +9,7 @@ allowed-tools: ["Bash(node *)", "Bash(npm *)", "Bash(npx *)", "Bash(curl *)"]
 
 # Mag3nt Pay
 
-Pay for any API that returns HTTP 402 using Mag3nt virtual cards and USDC. Supports Base, Solana and most EVMs. Settles on Solana, Base and Tempo.
+Pay for APIs and services, receive payments, and manage agent wallets using USDC virtual cards. Supports Base, Solana and most EVMs. Settles on Solana, Base and Tempo.
 
 ## Preflight
 
@@ -66,9 +66,15 @@ Always check balance first. Read `references/balance.md` before any payment.
 ## Payment Flow
 
 1. **Detect** — Agent receives HTTP 402
-2. **Check** — Verify card balance >= required amount via `GET /api/cards`
-3. **Pay** — Call `POST /api/pay` with `{ card_id, card_token, url }` (or `POST /api/pay/{code}/settle` for Pay Links)
-4. **Retry** — Re-send the original request with the payment receipt header
+2. **Buyer-Agent Preflight** — Before any autonomous spend, extract and verify:
+   - **Price / cap unit** — exact amount and currency from the 402 challenge
+   - **Policy / version hash** — if the merchant provides terms or a policy hash, log it
+   - **Revocation / dispute path** — merchant contact or refund endpoint
+   - **Allow / caution / block** — if the amount exceeds the user's stated limit, STOP and ask for confirmation
+3. **Check** — Verify card balance >= required amount via `GET /api/cards`
+4. **Pay** — Call `POST /api/pay` with `{ card_id, card_token, url }` (or `POST /api/pay/{code}/settle` for Pay Links). The response includes a `transaction_id` and `settlement.tx_hash` as cryptographic charge-evidence.
+5. **Receipt** — Log the `transaction_id`, `amount_debited`, `protocol`, and `tx_hash` for audit
+6. **Retry** — Re-send the original request with the payment receipt header
 
 ## Error Handling
 
@@ -83,5 +89,6 @@ Always check balance first. Read `references/balance.md` before any payment.
 - All payments are in **USDC** on the network configured for the card
 - Card credentials never leave the local environment
 - The agent should always confirm the payment amount with the user before paying amounts > $1.00
+- Every payment returns a `transaction_id` and on-chain `tx_hash` — always log these as charge-evidence
 - Pay Links are the most common protocol — most merchants use them
 - API base URL is `https://mag3nt.com` (not api.mag3nt.com)
