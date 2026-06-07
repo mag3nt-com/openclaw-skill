@@ -1,7 +1,7 @@
 ---
 name: mag3nt-pay
-version: 1.0.0
-description: "Pay for any API that returns HTTP 402 Payment Required using Mag3nt virtual cards. Use when the agent encounters an HTTP 402 response, a paywall, a payment challenge header (PAYMENT-REQUIRED, WWW-Authenticate Payment, AP2-Challenge), a paylink object in a 402 body, or needs to check card balance or configure Mag3nt credentials to access a paid API endpoint."
+version: 1.0.2
+description: "Pay for APIs and services, receive payments, and manage agent wallets using Mag3nt USDC virtual cards. Activate when the agent needs to pay for a resource, encounters an HTTP 402 response, a payment challenge header (x402, MPP, AP2, Pay Link), needs to check wallet balance, or set up payment credentials for autonomous transactions."
 user-invocable: true
 disable-model-invocation: false
 allowed-tools: ["Bash(node *)", "Bash(npm *)", "Bash(npx *)", "Bash(curl *)"]
@@ -9,7 +9,7 @@ allowed-tools: ["Bash(node *)", "Bash(npm *)", "Bash(npx *)", "Bash(curl *)"]
 
 # Mag3nt Pay
 
-Pay for any API that returns HTTP 402 using Mag3nt virtual cards and USDC. Supports Base, Solana and most EVMs. Settles on Solana, Base and Tempo.
+Pay for APIs and services, receive payments, and manage agent wallets using USDC virtual cards. Supports Base, Solana and most EVMs. Settles on Solana, Base and Tempo.
 
 ## Preflight
 
