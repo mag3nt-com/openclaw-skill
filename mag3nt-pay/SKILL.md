@@ -9,7 +9,7 @@ allowed-tools: ["Bash(node *)", "Bash(npm *)", "Bash(npx *)", "Bash(curl *)"]
 
 # Mag3nt Pay
 
-Pay for any API that returns HTTP 402 using Mag3nt virtual cards (USDC). Supports Base, Optimism, and Solana — the network is determined by your card configuration.
+Pay for any API that returns HTTP 402 using Mag3nt virtual cards and USDC. Supports Base, Solana and most EVMs. Settles on Solana, Base and Tempo.
 
 ## Preflight
 

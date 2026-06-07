@@ -3,7 +3,7 @@
 [![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-blue?style=flat-square)](https://clawhub.ai/skills/mag3nt-pay)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
 
-**Give your OpenClaw agent a wallet.** This skill teaches agents to autonomously pay for any API that returns HTTP 402 — using USDC via Mag3nt virtual cards on Base, Optimism, or Solana.
+**Give your OpenClaw agent a wallet.** This skill teaches agents to autonomously pay for any API that returns HTTP 402 — using USDC via Mag3nt virtual cards. Supports Base, Solana and most EVMs.
 
 ---
 
@@ -19,7 +19,7 @@ Or copy the `mag3nt-pay/` directory into `~/.openclaw/skills/`.
 
 1. Get a free API key at [mag3nt.com](https://mag3nt.com)
 2. Create an agent card in the dashboard
-3. Fund it with USDC (Base, Optimism, or Solana)
+3. Fund it with USDC (Base, Solana, or any supported EVM)
 4. Set your env vars:
 
 ```bash
@@ -157,16 +157,17 @@ This checks your card balance and confirms the SDK is working.
 
 ## Requirements
 
-- Node.js 18+
-- `@mag3nt/sdk` (auto-installed by the skill)
+- Node.js 18+ or Python 3.8+
+- `@mag3nt/sdk` (npm) or `mag3nt` (PyPI)
 - A Mag3nt account with a funded agent card
 
 ## Links
 
 - **Dashboard:** [mag3nt.com](https://mag3nt.com)
 - **API Docs:** [docs.mag3nt.com](https://docs.mag3nt.com)
-- **SDK:** [@mag3nt/sdk on npm](https://www.npmjs.com/package/@mag3nt/sdk)
-- **Protocol Specs:** [mag3nt-agent-skills](https://github.com/mag3nt/agent-skills)
+- **SDK (npm):** [@mag3nt/sdk on npm](https://www.npmjs.com/package/@mag3nt/sdk)
+- **SDK (Python):** [mag3nt on PyPI](https://pypi.org/project/mag3nt/)
+- **Protocol Specs:** [mag3nt-agent-skills](https://github.com/mag3nt-com/agent-skills)
 
 ## License
 
