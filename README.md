@@ -1,19 +1,27 @@
-# mag3nt-pay — OpenClaw Skill
+# mag3nt-pay — Agent Payment Skill
 
 [![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-blue?style=flat-square)](https://clawhub.ai/skills/mag3nt-pay)
+[![Hermes Agent](https://img.shields.io/badge/Hermes-Compatible-purple?style=flat-square)](https://github.com/NousResearch/hermes-agent)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
 
-**Give your OpenClaw agent a wallet.** This skill teaches agents to autonomously pay for any API that returns HTTP 402 — using USDC via Mag3nt virtual cards. Supports Base, Solana and most EVMs.
+**Give your AI agent a wallet.** This skill teaches agents to autonomously pay for any API that returns HTTP 402 — using USDC via Mag3nt virtual cards. Supports Base, Solana and most EVMs. Compatible with OpenClaw, Hermes Agent, and any framework supporting the [agentskills.io](https://agentskills.io) standard.
 
 ---
 
 ## Install
 
+**OpenClaw:**
 ```bash
 openclaw skill install mag3nt-pay
 ```
 
-Or copy the `mag3nt-pay/` directory into `~/.openclaw/skills/`.
+**Hermes Agent:**
+```bash
+hermes skills tap add mag3nt-com/openclaw-skill
+```
+
+**Manual (any agentskills.io framework):**
+Copy the `mag3nt-pay/` directory into your agent's skills folder.
 
 ## Setup (60 seconds)
 
@@ -23,7 +31,7 @@ Or copy the `mag3nt-pay/` directory into `~/.openclaw/skills/`.
 4. Set your env vars:
 
 ```bash
-export MAG3NT_API_KEY=sx_live_your_key
+export MAG3NT_API_KEY=mag3nt_live_your_key
 export MAG3NT_CARD_ID=mag3nt_your_card_id
 export MAG3NT_CARD_TOKEN=tok_your_card_token
 ```
