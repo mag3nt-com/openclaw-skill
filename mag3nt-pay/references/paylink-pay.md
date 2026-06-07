@@ -48,7 +48,7 @@ Two settlement methods are supported:
 | Field | Type | Description |
 |-------|------|-------------|
 | `protocol` | string | Settlement protocol (e.g. `"x402"`) |
-| `payer_card_id` | string | Agent's card ID (`sx_...`) |
+| `payer_card_id` | string | Agent's card ID (`mag3nt_...`, legacy `sx_...`) |
 | `payer_card_token` | string | Agent's card token (`tok_...`) |
 
 **On-chain settlement (wallet-to-wallet):**

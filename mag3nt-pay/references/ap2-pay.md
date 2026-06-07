@@ -1,49 +1,110 @@
-# AP2 Pay — Mandate-Based Recurring Payments
+# AP2 Pay — Google Agentic Payment Protocol v2
 
-AP2 (Agent-to-Agent Payment Protocol) is used for recurring or pre-authorized payments. Detection is described below, but **payment uses the same universal endpoint** as all protocols.
+AP2 is a **mandate-based** payment protocol designed by Google for agentic commerce. It does NOT use HTTP 402 challenge-response.
 
-## Detection
+## Key Difference
 
-An HTTP 402 response with an `AP2-Challenge` header indicates AP2:
+| | x402 / MPP | AP2 |
+|---|---|---|
+| **Trigger** | HTTP 402 + headers | Merchant checkout flow (no 402) |
+| **Model** | Challenge → Pay → Retry | Instruments → Mandate → Receipt |
+| **Endpoint** | `POST /api/pay` (universal) | Dedicated `/api/ap2/*` routes |
+| **Roles** | Payer + Merchant | Shopping Agent, Credential Provider (Mag3nt), Merchant, MPP, Trusted Surface |
 
-```typescript
-if (response.status === 402) {
-  const ap2Header = response.headers.get("AP2-Challenge");
-  if (ap2Header) {
-    // This is an AP2 challenge — pay via POST /api/pay
-  }
-}
+## How AP2 Works
+
+Mag3nt acts as the **Credential Provider (CP)** — it issues payment credentials (SD-JWT mandates) and verifies receipts.
+
+### Flow
+
+1. **List Instruments** — See what payment instruments are available
+2. **Merchant Checkout** — The merchant issues a signed Checkout JWT describing the purchase
+3. **Issue Mandate** — Agent requests a signed SD-JWT Payment Mandate from Mag3nt
+4. **Present to Merchant** — Agent presents the mandate to the merchant's payment processor
+5. **Verify Receipt** — Agent submits the Payment Receipt JWT to Mag3nt for verification
+
+## AP2 Endpoints
+
+### List Instruments
+
+```
+GET https://mag3nt.com/api/ap2/instruments?card_id=<CARD_ID>&card_token=<CARD_TOKEN>
 ```
 
-## Pay
+Returns available payment instruments with balance info.
 
-AP2 payments use the same universal endpoint as x402 and MPP. The engine auto-detects the protocol:
+### Issue Payment Mandate
 
-```typescript
-const payment = await fetch("https://mag3nt.com/api/pay", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.MAG3NT_API_KEY}`,
-  },
-  body: JSON.stringify({
-    card_id: process.env.MAG3NT_CARD_ID,
-    card_token: process.env.MAG3NT_CARD_TOKEN,
-    url: "https://data.example.com/v1/market-feed",
-    method: "POST",
-    body: { symbols: ["BTC", "ETH"], interval: "1m" },
-  }),
-});
-
-const result = await payment.json();
-// result.protocol === "ap2"
-console.log("Paid:", result.amount_debited, "USDC via", result.protocol);
+```
+POST https://mag3nt.com/api/ap2/mandate
+Content-Type: application/json
 ```
 
-See `references/x402-pay.md` for full request/response schema (same endpoint, same shape).
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `card_id` | string | yes | Card identifier |
+| `card_token` | string | yes | Card secret token |
+| `checkout_jwt` | string | yes | Merchant-signed Checkout JWT |
+| `amount` | number | yes | Payment amount in USDC |
+| `currency` | string | yes | Currency (e.g. `USDC`) |
+| `payee.name` | string | yes | Merchant name |
+| `payee.website` | string | yes | Merchant website URL |
+| `open_mandate` | string | no | Open mandate JWT (for autonomous flow) |
+
+Response includes `mandate` (signed SD-JWT), `mandate_id`, and `expires_at`. Present the mandate to the merchant's payment processor.
+
+### Verify Payment Receipt
+
+```
+POST https://mag3nt.com/api/ap2/receipt
+Content-Type: application/json
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `card_id` | string | yes | Card identifier |
+| `card_token` | string | yes | Card secret token |
+| `payment_receipt` | string | yes | MPP-signed receipt JWT |
+| `mandate_id` | string | yes | The mandate ID from the issue step |
+
+### JWKS (Public Key)
+
+```
+GET https://mag3nt.com/api/ap2/.well-known/jwks.json
+```
+
+Returns the ES256 public key used to verify mandate signatures.
+
+## Autonomous (Human-Not-Present) Flow
+
+AP2 supports pre-authorized spending via **Open Mandates**:
+
+1. Human authorizes an open mandate with a max spending cap and allowed payees
+2. Agent derives closed mandates from the open mandate for individual purchases
+3. Each closed mandate is chained to the open mandate via `sd_hash`
+4. The open mandate's constraints (max amount, allowed payees, expiry) are enforced
+
+### Open Mandate Endpoint
+
+```
+POST https://mag3nt.com/api/ap2/open-mandate
+Content-Type: application/json
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `card_id` | string | yes | Card identifier |
+| `card_token` | string | yes | Card secret token |
+| `max_amount` | number | yes | Maximum total spend allowed |
+| `currency` | string | yes | Currency (e.g. `USDC`) |
+| `agent_key` | object | yes | Agent's public JWK for mandate derivation |
+| `ttl_minutes` | number | yes | How long the open mandate is valid |
+
+To derive a closed mandate from an open mandate, call `POST /api/ap2/mandate` with the `open_mandate` field set to the open mandate JWT.
 
 ## Notes
 
-- AP2 is ideal for **recurring purchases** and **pre-authorized spending limits**
-- The mandate defines the maximum amount the merchant can pull per transaction
-- If the mandate is exhausted, the agent will need to create a new one
+- AP2 uses **SD-JWT VCs** (Selective Disclosure JWT Verifiable Credentials) for mandates
+- Mandates are signed with ES256 (P-256) by Mag3nt as the Credential Provider
+- The autonomous flow enforces human-set spending limits — the agent cannot exceed the open mandate's `max_amount`
+- Receipt verification checks the MPP's signature against their published JWKS
